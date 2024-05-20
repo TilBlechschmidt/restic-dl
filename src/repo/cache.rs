@@ -1,28 +1,23 @@
-use tokio::task::AbortHandle;
-use tokio::time::sleep;
-
 use crate::repo::Repository;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tokio::task::AbortHandle;
+use tokio::time::sleep;
 
-const CACHE_LIFETIME: Duration = Duration::from_secs(60 * 15);
-
-pub type CachedRepo = Arc<dyn Repository + Send + Sync>;
-
-type CacheMap = HashMap<[u8; 32], (CachedRepo, AbortHandle)>;
+type CacheMap = HashMap<[u8; 32], (Repository, AbortHandle)>;
 
 #[derive(Clone)]
 pub struct Cache(Arc<Mutex<CacheMap>>);
 
 impl Cache {
+    const LIFETIME: Duration = Duration::from_secs(60 * 1);
+
     pub fn new() -> Self {
         Self(Arc::new(Mutex::new(HashMap::new())))
     }
 
-    pub fn insert(&self, repository: impl Repository + Send + Sync + 'static) -> CachedRepo {
-        let id = repository.id();
-
+    pub fn insert(&self, id: [u8; 32], repository: Repository) -> Repository {
         self.0
             .lock()
             .expect("repo cache poisoned")
@@ -34,13 +29,13 @@ impl Cache {
             })
             .or_insert_with(|| {
                 eprintln!("Repo `{id:x?}` inserted into cache");
-                (Arc::new(repository), self.spawn_lifetime_task(id))
+                (repository, self.spawn_lifetime_task(id))
             })
             .0
             .clone()
     }
 
-    pub fn get(&self, id: [u8; 32]) -> Option<CachedRepo> {
+    pub fn get(&self, id: [u8; 32]) -> Option<Repository> {
         let mut cache = self.0.lock().expect("repo cache poisoned");
 
         cache.entry(id).and_modify(|(_, handle)| {
@@ -57,7 +52,7 @@ impl Cache {
     }
 
     async fn purge_entry(self, id: [u8; 32]) {
-        sleep(CACHE_LIFETIME).await;
+        sleep(Self::LIFETIME).await;
         self.0.lock().expect("repo cache poisoned").remove(&id);
         eprintln!("Repo `{id:x?}` dropped from cache");
     }

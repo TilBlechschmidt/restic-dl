@@ -1,4 +1,5 @@
 mod repository;
 mod snapshot;
 
-pub use repository::open;
+pub use repository::Repository;
+pub use snapshot::Snapshot;

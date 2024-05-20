@@ -7,8 +7,9 @@ edition = "2021"
 askama = { version = "0.12.1", default-features = false, features = ["with-axum"] }
 askama_axum = "0.4.0"
 axum = { version = "0.7.5", features = ["macros"] }
-rustic_backend = { version = "0.1.1", default-features = false }
-rustic_core = "0.2.0"
+blake3 = "1.5.1"
+rustic_backend = { path = "../rustic_core/crates/backend", version = "0.1.1", default-features = false }
+rustic_core = { path = "../rustic_core/crates/core", version = "0.2.0" }
 serde = { version = "1.0.202", features = ["derive"] }
 serde_json = "1.0.117"
 thiserror = "1.0.61"
