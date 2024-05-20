@@ -1,0 +1,16 @@
+{
+  "name": "restic-dl",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "npx tailwindcss -i ./templates/input.css -o ./assets/css/main.css --watch",
+    "prod": "npx tailwindcss -i ./templates/input.css -o ./assets/css/main.css --minify"
+  },
+  "keywords": [],
+  "author": "Til Blechschmidt",
+  "license": "ISC",
+  "devDependencies": {
+    "daisyui": "^4.11.1",
+    "tailwindcss": "^3.4.3"
+  }
+}

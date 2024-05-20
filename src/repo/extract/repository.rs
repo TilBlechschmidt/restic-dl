@@ -51,7 +51,7 @@ where
 
         cache.get(id).map(|r| Ok(r)).unwrap_or_else(|| {
             // TODO Consider reporting error
-            Repository::open(path, pass)
+            Repository::open(params.repo_name, path, pass)
                 .map(|repository| cache.insert(id, repository))
                 .map_err(|_| {
                     (

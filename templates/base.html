@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{% block title %}{{ Self::title(self) }} – ResticDL{% endblock %}</title>
+
+        <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+        <link rel="stylesheet" type="text/css" href="/browse/highlight.css" />
+
+        <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        <main class="flex flex-col items-center">
+            <div class="max-w-4xl w-full px-4">
+                <nav>
+                    <ul>
+                        {% include "frag/nav.html" %}
+                    </ul>
+                </nav>
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </body>
+</html>

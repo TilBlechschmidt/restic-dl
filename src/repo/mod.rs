@@ -1,19 +1,29 @@
-use rustic_core::repofile::{Metadata, NodeType};
-use std::path::PathBuf;
+use std::io;
+
+use axum::{http::StatusCode, response::IntoResponse};
+use rustic_core::RusticError;
+use thiserror::Error;
 
 mod cache;
 mod extract;
 mod restic;
 
 pub use cache::Cache;
-pub use restic::{Repository, Snapshot};
+pub use restic::*;
 
-pub type RepositoryError = Box<dyn std::error::Error>;
-pub type RepositoryResult<T> = Result<T, RepositoryError>;
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("restic call failed")]
+    BackendError(#[from] RusticError),
 
-#[derive(Debug)]
-pub struct DirectoryEntry {
-    pub path: PathBuf,
-    pub metadata: Metadata,
-    pub file_type: NodeType,
+    #[error("I/O error")]
+    IoError(#[from] io::Error),
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
+    }
 }

@@ -1,0 +1,7 @@
+<div class="flex-grow bg-base-300 rounded-lg p-4 w-full overflow-x-auto" id="preview">
+    {% if let Some(content) = content %}
+        <pre class="font-mono text-xs">{{ content.text|safe }}</pre>
+    {% else %}
+        No textual content
+    {% endif %}
+</div>
