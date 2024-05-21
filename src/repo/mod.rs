@@ -9,14 +9,15 @@ mod extract;
 mod restic;
 
 pub use cache::Cache;
+pub use extract::EntryPath;
 pub use restic::*;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("restic call failed")]
+    #[error("restic internal error: {0}")]
     BackendError(#[from] RusticError),
 
-    #[error("I/O error")]
+    #[error("i/o error: {0}")]
     IoError(#[from] io::Error),
 }
 

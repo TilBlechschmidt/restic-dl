@@ -1,0 +1,76 @@
+<table id="content" class="table table-zebra table-xs whitespace-nowrap rounded overflow-hidden">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th>Size</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if let Some(parent) = directory.parent %}
+      <tr class="opacity-50">
+        <th>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M240,192a8,8,0,0,1-8,8H88a8,8,0,0,1-8-8V67.31L45.66,101.66A8,8,0,0,1,34.34,90.34l48-48a8,8,0,0,1,11.32,0l48,48a8,8,0,0,1-11.32,11.32L96,67.31V184H232A8,8,0,0,1,240,192Z"></path></svg>
+        </th>
+        <td class="w-full">
+          {% let url = parent.url.view.as_ref().expect("parent has no view URL") %}
+          <a href="{{ url }}" class="link link-hover w-full block" hx-get="{{ url }}" hx-target="#content" hx-swap="outerHTML show:window:top" hx-push-url="true">
+            ..
+          </a>
+        </td>
+      </tr>
+    {% endif %}
+    {% for entry in directory.entries %}
+      <tr class="rounded">
+        <th>
+          {% match entry.kind %}
+            {% when EntryKind::File %}
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"></path></svg>
+            {% when EntryKind::Directory %}
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M216,72H131.31L104,44.69A15.88,15.88,0,0,0,92.69,40H40A16,16,0,0,0,24,56V200.62A15.41,15.41,0,0,0,39.39,216h177.5A15.13,15.13,0,0,0,232,200.89V88A16,16,0,0,0,216,72ZM40,56H92.69l16,16H40Z"></path></svg>
+          {% endmatch %}
+        </th>
+        <td class="w-full">
+          {% if let Some(url) = entry.url.view %}
+            <a
+              href="{{ url }}"
+              class="link link-hover block"
+              hx-get="{{ url }}"
+              hx-target="#content"
+              hx-swap="outerHTML show:window:top"
+              hx-push-url="true"
+            >
+              {{ entry.name() }}
+            </a>
+          {% else %}
+            {{ entry.name() }}
+          {% endif %}
+        </td>
+        <td class="font-mono text-right">
+          {% match entry.kind %}
+            {% when EntryKind::File %}
+              {{ entry.size|filesizeformat }}
+            {% when EntryKind::Directory %}
+              <span class="opacity-25">–</span>
+          {% endmatch %}
+        </td>
+        <td>
+          <div class="join">
+            <a href="{{ entry.url.download }}" class="btn btn-xs btn-ghost join-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"></path></svg>
+            </a>
+            <a href="{{ entry.url.share }}" class="btn btn-xs btn-ghost join-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M240,88.23a54.43,54.43,0,0,1-16,37L189.25,160a54.27,54.27,0,0,1-38.63,16h-.05A54.63,54.63,0,0,1,96,119.84a8,8,0,0,1,16,.45A38.62,38.62,0,0,0,150.58,160h0a38.39,38.39,0,0,0,27.31-11.31l34.75-34.75a38.63,38.63,0,0,0-54.63-54.63l-11,11A8,8,0,0,1,135.7,59l11-11A54.65,54.65,0,0,1,224,48,54.86,54.86,0,0,1,240,88.23ZM109,185.66l-11,11A38.41,38.41,0,0,1,70.6,208h0a38.63,38.63,0,0,1-27.29-65.94L78,107.31A38.63,38.63,0,0,1,144,135.71a8,8,0,0,0,16,.45A54.86,54.86,0,0,0,144,96a54.65,54.65,0,0,0-77.27,0L32,130.75A54.62,54.62,0,0,0,70.56,224h0a54.28,54.28,0,0,0,38.64-16l11-11A8,8,0,0,0,109,185.66Z"></path></svg>
+            </a>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr class="">
+      <td colspan="4" scope="row" class="font-normal text-xs text-center opacity-50 pt-4 pb-8">{{ directory.summary() }}</td>
+    </tr>
+  </tfoot>
+</table>

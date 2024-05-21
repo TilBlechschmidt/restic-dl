@@ -131,8 +131,9 @@ checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
 
 [[package]]
 name = "askama"
-version = "0.13.0"
-source = "git+https://github.com/djc/askama#c1366e0fd8b0d3c1c3c7ef53900129e23a52a46c"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b79091df18a97caea757e28cd2d5fda49c6cd4bd01ddffd7ff01ace0c0ad2c28"
 dependencies = [
  "askama_derive",
  "askama_escape",
@@ -143,8 +144,9 @@ dependencies = [
 
 [[package]]
 name = "askama_axum"
-version = "0.5.0"
-source = "git+https://github.com/djc/askama#c1366e0fd8b0d3c1c3c7ef53900129e23a52a46c"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a41603f7cdbf5ac4af60760f17253eb6adf6ec5b6f14a7ed830cf687d375f163"
 dependencies = [
  "askama",
  "axum-core",
@@ -153,8 +155,9 @@ dependencies = [
 
 [[package]]
 name = "askama_derive"
-version = "0.13.0"
-source = "git+https://github.com/djc/askama#c1366e0fd8b0d3c1c3c7ef53900129e23a52a46c"
+version = "0.12.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19fe8d6cb13c4714962c072ea496f3392015f0989b1a2847bb4b2d9effd71d83"
 dependencies = [
  "askama_parser",
  "basic-toml",
@@ -168,13 +171,15 @@ dependencies = [
 
 [[package]]
 name = "askama_escape"
-version = "0.11.0"
-source = "git+https://github.com/djc/askama#c1366e0fd8b0d3c1c3c7ef53900129e23a52a46c"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "619743e34b5ba4e9703bba34deac3427c72507c7159f5fd030aea8cac0cfe341"
 
 [[package]]
 name = "askama_parser"
 version = "0.2.1"
-source = "git+https://github.com/djc/askama#c1366e0fd8b0d3c1c3c7ef53900129e23a52a46c"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acb1161c6b64d1c3d83108213c2a2533a342ac225aabd0bda218278c2ddb00c0"
 dependencies = [
  "nom",
 ]
@@ -1724,14 +1729,18 @@ dependencies = [
  "askama_axum",
  "axum",
  "blake3",
+ "futures-core",
  "rustic_backend",
  "rustic_core",
  "serde",
  "serde_json",
  "syntect",
  "syntect-assets",
+ "tar",
+ "tempfile",
  "thiserror",
  "tokio",
+ "tokio-util",
  "tower-http",
 ]
 
@@ -2169,6 +2178,16 @@ dependencies = [
  "serde_yaml",
  "syntect",
  "thiserror",
+]
+
+[[package]]
+name = "tar"
+version = "0.4.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b16afcea1f22891c49a00c751c7b63b2233284064f11a200fc624137c51e2ddb"
+dependencies = [
+ "filetime",
+ "libc",
 ]
 
 [[package]]

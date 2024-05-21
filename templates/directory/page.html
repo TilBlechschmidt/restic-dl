@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block nav %}
+  {% let location = directory.location() %}
+  {% include "./partial/location.html" %}
+{% endblock %}
+
+{% block content %}
+  {% include "./partial/table.html" %}
+{% endblock %}

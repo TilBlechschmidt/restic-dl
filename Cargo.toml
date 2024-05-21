@@ -4,18 +4,22 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-askama = { version = "0.13.0", default-features = false, features = ["with-axum"], git = "https://github.com/djc/askama" }
-askama_axum = { version = "0.5.0", git = "https://github.com/djc/askama" }
+askama = { version = "0.12.1", default-features = false, features = ["with-axum"] }
+askama_axum = "0.4.0"
 axum = { version = "0.7.5", features = ["macros"] }
 blake3 = "1.5.1"
+futures-core = "0.3.30"
 rustic_backend = { path = "../rustic_core/crates/backend", version = "0.1.1", default-features = false }
 rustic_core = { path = "../rustic_core/crates/core", version = "0.2.0" }
 serde = { version = "1.0.202", features = ["derive"] }
 serde_json = "1.0.117"
 syntect = { version = "5.2.0", default-features = false, features = ["html", "parsing"] }
 syntect-assets = "0.23.6"
+tar = { version = "0.4.40", default-features = false }
+tempfile = "3.10.1"
 thiserror = "1.0.61"
 tokio = { version = "1.37.0", features = ["full"] }
+tokio-util = { version = "0.7.11", features = ["io"] }
 tower-http = { version = "0.5.2", features = ["fs", "compression-br", "compression-gzip", "normalize-path"] }
 
 [profile.dev.package."*"]
