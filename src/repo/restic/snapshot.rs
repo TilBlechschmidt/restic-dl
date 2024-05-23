@@ -2,21 +2,23 @@ use super::Repository;
 use crate::repo::Result;
 use rustic_core::{
     repofile::{Node, NodeType, SnapshotFile},
-    HexId, LocalDestination, LsOptions, RestoreOptions,
+    HexId, LsOptions,
 };
+use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     io,
     path::{Path, PathBuf},
 };
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Entry {
     pub path: PathBuf,
     pub kind: EntryKind,
     pub size: u64,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EntryKind {
     File,
     Directory,
@@ -25,13 +27,6 @@ pub enum EntryKind {
 pub struct FileContent {
     pub data: Vec<u8>,
     pub truncated_by: u64,
-}
-
-#[derive(Debug)]
-pub struct RestoreDetails {
-    size: u64,
-    files: u64,
-    directories: u64,
 }
 
 pub struct Snapshot {
@@ -97,49 +92,7 @@ impl Snapshot {
         })
     }
 
-    pub fn restore(
-        &self,
-        source: impl AsRef<Path>,
-        destination: impl AsRef<Path>,
-    ) -> Result<RestoreDetails> {
-        let node = self.node(source)?;
-        let source = self
-            .repo
-            .ls(&node, &LsOptions::default())?
-            .filter(|r| match r {
-                Ok((_, node)) => {
-                    node.node_type == NodeType::File || node.node_type == NodeType::Dir
-                }
-                Err(_) => false,
-            });
-
-        let destination = LocalDestination::new(
-            destination
-                .as_ref()
-                .to_str()
-                .expect("attempted to restore into directory with invalid path name"),
-            true,
-            !node.is_dir(),
-        )?;
-
-        let opts = RestoreOptions::default().no_ownership(true);
-
-        let plan = self
-            .repo
-            .prepare_restore(&opts, source.clone(), &destination, false)?;
-
-        let details = RestoreDetails {
-            size: plan.restore_size,
-            files: plan.stats.files.restore,
-            directories: plan.stats.dirs.restore,
-        };
-
-        self.repo.restore(plan, &opts, source, &destination)?;
-
-        Ok(details)
-    }
-
-    fn node(&self, path: impl AsRef<Path>) -> Result<Node> {
+    pub(super) fn node(&self, path: impl AsRef<Path>) -> Result<Node> {
         Ok(self
             .repo
             .node_from_snapshot_and_path(&self.snapshot_file, &path.as_ref().to_string_lossy())?)
@@ -147,7 +100,7 @@ impl Snapshot {
 }
 
 impl Entry {
-    fn new(node: Node, path: PathBuf) -> Result<Self> {
+    pub(super) fn new(node: Node, path: PathBuf) -> Result<Self> {
         Ok(Self {
             path,
             kind: node.node_type.try_into()?,

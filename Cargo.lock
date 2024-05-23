@@ -1730,6 +1730,7 @@ dependencies = [
  "axum",
  "blake3",
  "futures-core",
+ "rand",
  "rustic_backend",
  "rustic_core",
  "serde",

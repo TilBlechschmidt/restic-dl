@@ -6,6 +6,7 @@ mod browse;
 mod download;
 mod htmx;
 mod repo;
+mod restore;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {

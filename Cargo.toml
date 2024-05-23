@@ -9,6 +9,7 @@ askama_axum = "0.4.0"
 axum = { version = "0.7.5", features = ["macros"] }
 blake3 = "1.5.1"
 futures-core = "0.3.30"
+rand = "0.8.5"
 rustic_backend = { path = "../rustic_core/crates/backend", version = "0.1.1", default-features = false }
 rustic_core = { path = "../rustic_core/crates/core", version = "0.2.0" }
 serde = { version = "1.0.202", features = ["derive"] }
