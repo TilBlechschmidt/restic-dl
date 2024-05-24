@@ -53,7 +53,8 @@ where
             // TODO Consider reporting error
             Repository::open(params.repo_name, path, pass)
                 .map(|repository| cache.insert(id, repository))
-                .map_err(|_| {
+                .map_err(|err| {
+                    eprintln!("Failed to open repository: {err}");
                     (
                         StatusCode::INTERNAL_SERVER_ERROR,
                         "Failed to open repository",

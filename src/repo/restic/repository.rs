@@ -3,7 +3,7 @@ use crate::repo::Result;
 use rustic_backend::BackendOptions;
 use rustic_core::{
     repository::{FullIndex, IndexedStatus},
-    NoProgressBars, OpenStatus, RepositoryOptions,
+    HexId, NoProgressBars, OpenStatus, RepositoryOptions,
 };
 use std::{ops::Deref, path::PathBuf, sync::Arc};
 
@@ -42,6 +42,10 @@ impl Repository {
         );
 
         Ok(Self { name, repo })
+    }
+
+    pub fn id(&self) -> HexId {
+        self.repo.config().id.to_hex()
     }
 
     pub fn name(&self) -> &str {

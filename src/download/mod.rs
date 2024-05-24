@@ -1,120 +1,63 @@
-use crate::repo::{EntryKind, EntryPath, Result, Snapshot};
+use crate::{
+    helper::htmx::HxRequest,
+    repo::{EntryPath, Result, Snapshot},
+    restore::{RestoreId, RestoreManager},
+    Config,
+};
 use askama_axum::{IntoResponse, Response};
-use axum::{body::Body, http::header, routing::get, Router};
-use futures_core::Stream;
-use tempfile::{tempdir_in, TempDir};
-use tokio::{fs::File, io::BufReader};
-use tokio_util::io::ReaderStream;
+use axum::{extract::Path, response::Redirect, routing::get, Extension, Router};
+
+use self::{
+    page::{LinkFragment, LinkPage},
+    param::{Link, Progress},
+    response::{DownloadResponse, ProgressResponse, RestoreResponse},
+};
+
+mod page;
+mod param;
+mod response;
 
 pub fn routes() -> Router<()> {
-    Router::new().route("/:repo/:snapshot/*path", get(download))
+    Router::new()
+        .route("/restore/:repo/:snapshot/*path", get(restore))
+        .route("/download/:id", get(download))
+    // TODO Add page that shows the link and restore summary (maybe just a dialog fragment that creates the restore and then returns a link?)
 }
 
-// TODO Execute battle plan:
-//
-// - The code below is mostly sync and stores a bunch of temporary files anyway
-// - Make downloads a glorified share-link by using the same logic under-the-hood
-//   Instead of immediately showing a progress bar followed by a link and QR code or whatever:
-//      1. Dispatch the restore
-//      2. Wait a couple seconds to see whether it becomes ready
-//      3. Redirect to the progress page if it does not become ready or start download stream if it does
-// - Advantage of efficiently resumable downloads for large files
-//
-// - Central restore manager struct
-// - Jobs can be submitted (Snapshot+Path+Expiry)
-// - Restore Job ID is returned
-// - Progress updates can be fetched or subscribed to
-// - Files will be restored as-is
-// - Directories will be restored and then put into a single-file archive
-// - Should probably be mostly sync and have its own thread(s) so we don't annoy tokio
-//     - Rustic is not async so dealing with it would be utter pain
-pub async fn download(snapshot: Snapshot, EntryPath(path): EntryPath) -> Result<Response> {
-    let entry = snapshot.entry(&path)?;
-    let name = entry
-        .path
-        .file_name()
-        .expect("attempted to restore entry without a name");
+async fn download(
+    Path(id): Path<RestoreId>,
+    Link(link): Link,
+    Progress(progress): Progress,
+    HxRequest(fragment): HxRequest,
+    Extension(manager): Extension<RestoreManager>,
+    Extension(config): Extension<Config>,
+) -> Result<Response> {
+    let share_url = format!("{}/download/{id}", config.url);
 
-    let destination = tempdir_in("/tmp/restic")?;
-    let details = snapshot.restore(&path, &destination);
-    println!("Restore complete: {details:?}");
-
-    let entries = std::fs::read_dir(&destination)?
-        .map(|res| res.map(|e| e.path()))
-        .collect::<std::result::Result<Vec<_>, std::io::Error>>()?;
-
-    dbg!(entries);
-
-    let response = match entry.kind {
-        EntryKind::File => {
-            let body = Body::from_stream(TemporaryDownloadStream {
-                stream: ReaderStream::new(BufReader::new(
-                    File::open(destination.path().join(name)).await?,
-                )),
-                _source: destination,
-            });
-
-            (
-                [
-                    (header::CONTENT_TYPE, "application/octet-stream"),
-                    (
-                        header::CONTENT_DISPOSITION,
-                        &format!(r#"attachment; filename="{}""#, name.to_string_lossy()),
-                    ),
-                ],
-                body,
-            )
-                .into_response()
-        }
-        EntryKind::Directory => {
-            let tempdir = tempdir_in("/tmp/restic")?;
-            let archive_path = tempdir.path().join("archive.tar");
-
-            println!("Building archive");
-            let mut builder = tar::Builder::new(std::fs::File::create_new(&archive_path)?);
-
-            println!("Appending files at {name:?} from {destination:?}");
-            builder.append_dir_all(name, destination)?;
-
-            println!("Finishing archive");
-            builder.finish()?;
-
-            println!("Streaming archive");
-            let body = Body::from_stream(TemporaryDownloadStream {
-                stream: ReaderStream::new(BufReader::new(File::open(archive_path).await?)),
-                _source: tempdir,
-            });
-
-            (
-                [
-                    (header::CONTENT_TYPE, "application/x-tar"),
-                    (
-                        header::CONTENT_DISPOSITION,
-                        &format!(r#"attachment; filename="{}.tar""#, name.to_string_lossy()),
-                    ),
-                ],
-                body,
-            )
-                .into_response()
-        }
+    let response = if progress {
+        ProgressResponse::new(manager.progress(id)?).into_response()
+    } else if link && fragment {
+        LinkFragment::new(share_url).into_response()
+    } else if link {
+        LinkPage::new(share_url).into_response()
+    } else {
+        DownloadResponse::new(manager.fetch(id).await?).into_response()
     };
 
     Ok(response)
 }
 
-struct TemporaryDownloadStream<S: Stream + Unpin> {
-    _source: TempDir,
-    stream: S,
-}
+async fn restore(
+    snapshot: Snapshot,
+    EntryPath(path): EntryPath,
+    Link(link): Link,
+    Extension(manager): Extension<RestoreManager>,
+) -> Response {
+    let id = manager.restore(snapshot, path).await;
 
-impl<S: Stream + Unpin> Stream for TemporaryDownloadStream<S> {
-    type Item = S::Item;
-
-    fn poll_next(
-        mut self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Option<Self::Item>> {
-        let mut pinned = std::pin::pin!(&mut self.stream);
-        pinned.as_mut().poll_next(cx)
+    if link {
+        Redirect::to(&format!("/download/{id}?link")).into_response()
+    } else {
+        RestoreResponse::new(id, manager).await.into_response()
     }
 }

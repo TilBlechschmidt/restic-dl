@@ -1,4 +1,4 @@
-<table id="content" class="table table-zebra table-xs whitespace-nowrap rounded overflow-hidden">
+<table class="table table-zebra table-xs whitespace-nowrap rounded w-full">
   <thead>
     <tr>
       <th></th>
@@ -15,13 +15,13 @@
         </th>
         <td class="w-full">
           {% let url = parent.url.view.as_ref().expect("parent has no view URL") %}
-          <a href="{{ url }}" class="link link-hover w-full block" hx-get="{{ url }}" hx-target="#content" hx-swap="outerHTML show:window:top" hx-push-url="true">
+          <a href="{{ url }}" class="link link-hover w-full block" hx-get="{{ url }}" hx-target="main" hx-swap="show:window:top" hx-push-url="true">
             ..
           </a>
         </td>
       </tr>
     {% endif %}
-    {% for entry in directory.entries %}
+    {% for entry in directory.children %}
       <tr class="rounded">
         <th>
           {% match entry.kind %}
@@ -31,14 +31,14 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M216,72H131.31L104,44.69A15.88,15.88,0,0,0,92.69,40H40A16,16,0,0,0,24,56V200.62A15.41,15.41,0,0,0,39.39,216h177.5A15.13,15.13,0,0,0,232,200.89V88A16,16,0,0,0,216,72ZM40,56H92.69l16,16H40Z"></path></svg>
           {% endmatch %}
         </th>
-        <td class="w-full">
+        <td class="w-full overflow-hidden text-ellipsis max-w-0">
           {% if let Some(url) = entry.url.view %}
             <a
               href="{{ url }}"
               class="link link-hover block"
               hx-get="{{ url }}"
-              hx-target="#content"
-              hx-swap="outerHTML show:window:top"
+              hx-target="main"
+              hx-swap="show:window:top"
               hx-push-url="true"
             >
               {{ entry.name() }}
@@ -50,18 +50,18 @@
         <td class="font-mono text-right">
           {% match entry.kind %}
             {% when EntryKind::File %}
-              {{ entry.size|filesizeformat }}
+              {{ entry.size|humanbytes }}
             {% when EntryKind::Directory %}
               <span class="opacity-25">–</span>
           {% endmatch %}
         </td>
         <td>
           <div class="join">
-            <a href="{{ entry.url.download }}" class="btn btn-xs btn-ghost join-item">
+            <a href="{{ entry.url.restore }}" class="btn btn-xs btn-ghost join-item">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"></path></svg>
             </a>
-            <a href="{{ entry.url.share }}" class="btn btn-xs btn-ghost join-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M240,88.23a54.43,54.43,0,0,1-16,37L189.25,160a54.27,54.27,0,0,1-38.63,16h-.05A54.63,54.63,0,0,1,96,119.84a8,8,0,0,1,16,.45A38.62,38.62,0,0,0,150.58,160h0a38.39,38.39,0,0,0,27.31-11.31l34.75-34.75a38.63,38.63,0,0,0-54.63-54.63l-11,11A8,8,0,0,1,135.7,59l11-11A54.65,54.65,0,0,1,224,48,54.86,54.86,0,0,1,240,88.23ZM109,185.66l-11,11A38.41,38.41,0,0,1,70.6,208h0a38.63,38.63,0,0,1-27.29-65.94L78,107.31A38.63,38.63,0,0,1,144,135.71a8,8,0,0,0,16,.45A54.86,54.86,0,0,0,144,96a54.65,54.65,0,0,0-77.27,0L32,130.75A54.62,54.62,0,0,0,70.56,224h0a54.28,54.28,0,0,0,38.64-16l11-11A8,8,0,0,0,109,185.66Z"></path></svg>
+            <a href="{{ entry.url.share }}" class="btn btn-xs btn-ghost join-item" hx-get="{{ entry.url.share }}" hx-target="#modal">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256"><path d="M165.66,90.34a8,8,0,0,1,0,11.32l-64,64a8,8,0,0,1-11.32-11.32l64-64A8,8,0,0,1,165.66,90.34ZM215.6,40.4a56,56,0,0,0-79.2,0L106.34,70.45a8,8,0,0,0,11.32,11.32l30.06-30a40,40,0,0,1,56.57,56.56l-30.07,30.06a8,8,0,0,0,11.31,11.32L215.6,119.6a56,56,0,0,0,0-79.2ZM138.34,174.22l-30.06,30.06a40,40,0,1,1-56.56-56.57l30.05-30.05a8,8,0,0,0-11.32-11.32L40.4,136.4a56,56,0,0,0,79.2,79.2l30.06-30.07a8,8,0,0,0-11.32-11.31Z"></path></svg>
             </a>
           </div>
         </td>
@@ -69,7 +69,7 @@
     {% endfor %}
   </tbody>
   <tfoot>
-    <tr class="">
+    <tr>
       <td colspan="4" scope="row" class="font-normal text-xs text-center opacity-50 pt-4 pb-8">{{ directory.summary() }}</td>
     </tr>
   </tfoot>

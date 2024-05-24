@@ -7,18 +7,18 @@ use rustic_core::{
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
-    io,
+    io, iter,
     path::{Path, PathBuf},
 };
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Entry {
     pub path: PathBuf,
     pub kind: EntryKind,
     pub size: u64,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EntryKind {
     File,
     Directory,
@@ -32,6 +32,23 @@ pub struct FileContent {
 pub struct Snapshot {
     pub(super) repo: Repository,
     pub(super) snapshot_file: SnapshotFile,
+}
+
+#[derive(Clone)]
+enum EnumerationIter<I: Iterator<Item = Entry> + Clone> {
+    File(iter::Once<Entry>),
+    Directory(I),
+}
+
+impl<I: Iterator<Item = Entry> + Clone> Iterator for EnumerationIter<I> {
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            EnumerationIter::File(iterator) => iterator.next(),
+            EnumerationIter::Directory(iterator) => iterator.next(),
+        }
+    }
 }
 
 impl Snapshot {
@@ -51,18 +68,30 @@ impl Snapshot {
         Ok(Entry::new(self.node(&path)?, path.as_ref().into())?)
     }
 
-    pub fn enumerate(&self, path: impl AsRef<Path>) -> Result<impl Iterator<Item = Entry> + '_> {
+    pub fn enumerate(
+        &self,
+        path: impl AsRef<Path>,
+        recursive: bool,
+    ) -> Result<impl Iterator<Item = Entry> + Clone + '_> {
         let path = path.as_ref().to_path_buf();
         let node = self.node(&path)?;
-        let ls_opts = LsOptions::default().recursive(false);
 
-        Ok(self
-            .repo
-            .ls(&node, &ls_opts)?
-            .filter_map(std::result::Result::ok)
-            .filter_map(move |(relative_path, node)| {
-                Entry::new(node, path.join(relative_path)).ok()
-            }))
+        let entries = if !node.is_dir() {
+            EnumerationIter::File(iter::once(Entry::new(node, path)?))
+        } else {
+            let ls_opts = LsOptions::default().recursive(recursive);
+
+            EnumerationIter::Directory(
+                self.repo
+                    .ls(&node, &ls_opts)?
+                    .filter_map(std::result::Result::ok)
+                    .filter_map(move |(relative_path, node)| {
+                        Entry::new(node, path.join(relative_path)).ok()
+                    }),
+            )
+        };
+
+        Ok(entries)
     }
 
     pub fn read(&self, path: impl AsRef<Path>, size_limit: Option<u64>) -> Result<FileContent> {

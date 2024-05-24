@@ -1,4 +1,3 @@
-{% let location = directory.location() %}
-
-{% include "./partial/location.html" %}
+{{ directory.breadcrumbs|safe }}
+{{ directory.buttons|safe }}
 {% include "./partial/table.html" %}

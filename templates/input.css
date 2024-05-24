@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root, body {
+    @apply min-h-screen;
+}
+
+body.full-height > main {
+    @apply min-h-screen;
+}
+
 nav {
     @apply float-left text-sm breadcrumbs my-2 ml-2 w-full;
 }
@@ -10,8 +18,38 @@ svg {
     @apply w-4 h-4 fill-current;
 }
 
+figure.qr-code {
+    @apply bg-white;
+}
+
+figure.qr-code > svg {
+    @apply size-48
+}
+
 .breadcrumbs svg {
     @apply mr-1.5;
+}
+
+span.pseudo-text::after {
+    content: var(--c);
+}
+
+#ca:not(.active) {
+    @apply h-0 border-0;
+}
+
+#cpc::before {
+    transition: all 1s cubic-bezier(0.36, 0.36, 0, 0.96);
+}
+
+.modal-backdrop {
+    background-color: #000a;
+    animation: modal-pop .2s ease-out;
+}
+
+/* Safari support for `scrollbar-gutter` is not enabled by default so we just keep the scrollbar there for now */
+:root:has(:is(.modal-open, .modal:target, .modal-toggle:checked + .modal, .modal[open])) {
+    overflow: auto;
 }
 
 .file-list span {

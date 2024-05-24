@@ -1,5 +1,5 @@
 use crate::{
-    htmx::HxRequest,
+    helper::htmx::HxRequest,
     repo::{EntryPath, Result, Snapshot},
 };
 use axum::{

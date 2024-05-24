@@ -1,5 +1,5 @@
 use super::Directory;
-use crate::repo::EntryKind;
+use crate::{helper::filters, repo::EntryKind};
 use askama::Template;
 
 #[derive(Template)]

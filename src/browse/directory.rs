@@ -1,22 +1,30 @@
-use crate::repo::{Entry, EntryKind, Result, Snapshot};
-use axum::response::{IntoResponse, Response};
-use std::{
-    ops::Deref,
-    path::{Path as FilePath, PathBuf},
+use crate::{
+    helper::path_to_url,
+    navigation::{Breadcrumbs, Navigation},
+    repo::{Entry, EntryKind, Result, Snapshot},
 };
+use askama::Template;
+use axum::response::{IntoResponse, Response};
+use std::{ops::Deref, path::PathBuf};
 
 mod fragment;
-mod location;
 mod page;
 
 use fragment::Fragment;
-use location::Location;
 use page::Page;
 
+#[derive(Template)]
+#[template(path = "directory/partial/buttons.html")]
+struct DirectoryButtons {
+    url: DirectoryEntryUrls,
+}
+
 pub struct Directory {
-    entries: Vec<DirectoryEntry>,
-    location: Location,
+    children: Vec<DirectoryEntry>,
     parent: Option<DirectoryEntry>,
+
+    breadcrumbs: Breadcrumbs,
+    buttons: DirectoryButtons,
 }
 
 struct DirectoryEntry {
@@ -26,28 +34,32 @@ struct DirectoryEntry {
 
 struct DirectoryEntryUrls {
     view: Option<String>,
-    download: String,
+    restore: String,
     share: String,
 }
 
 impl Directory {
     pub fn new(snapshot: Snapshot, path: PathBuf) -> Result<Self> {
+        let entry = DirectoryEntry::new(snapshot.entry(&path)?, &snapshot);
+
         let parent = path
             .parent()
             .and_then(|parent_path| snapshot.entry(parent_path).ok())
             .map(|entry| DirectoryEntry::new(entry, &snapshot));
 
-        let entries = snapshot
-            .enumerate(&path)?
+        let children = snapshot
+            .enumerate(&path, false)?
             .map(|entry| DirectoryEntry::new(entry, &snapshot))
             .collect();
 
-        let location = Location::new(snapshot, path);
+        let breadcrumbs = Breadcrumbs::from((&snapshot, &path));
+        let buttons = DirectoryButtons { url: entry.url };
 
         Ok(Self {
-            entries,
-            location,
+            children,
             parent,
+            breadcrumbs,
+            buttons,
         })
     }
 
@@ -59,13 +71,9 @@ impl Directory {
         }
     }
 
-    fn location(&self) -> &Location {
-        &self.location
-    }
-
     fn summary(&self) -> String {
         let (files, dirs) =
-            self.entries
+            self.children
                 .iter()
                 .fold((0, 0), |(files, dirs), entry| match entry.kind {
                     EntryKind::File => (files + 1, dirs),
@@ -90,6 +98,12 @@ impl Directory {
     }
 }
 
+impl From<&Directory> for Navigation {
+    fn from(dir: &Directory) -> Self {
+        Navigation::new(&dir.breadcrumbs).with_buttons(&dir.buttons)
+    }
+}
+
 impl DirectoryEntry {
     fn new(entry: Entry, snapshot: &Snapshot) -> Self {
         let suffix = format!(
@@ -106,8 +120,8 @@ impl DirectoryEntry {
         };
 
         let url = DirectoryEntryUrls {
-            share: format!("/share/{suffix}"),
-            download: format!("/download/{suffix}"),
+            share: format!("/restore/{suffix}?link"),
+            restore: format!("/restore/{suffix}"),
             view,
         };
 
@@ -121,12 +135,4 @@ impl Deref for DirectoryEntry {
     fn deref(&self) -> &Self::Target {
         &self.entry
     }
-}
-
-fn path_to_url(path: &FilePath) -> String {
-    path.components()
-        .skip_while(|x| x.as_os_str() == "/")
-        .map(|c| c.as_os_str().to_string_lossy())
-        .collect::<Vec<_>>()
-        .join("/")
 }

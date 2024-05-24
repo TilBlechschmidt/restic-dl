@@ -1,0 +1,12 @@
+<ul id="breadcrumbs" hx-swap-oob="true">
+  {% for breadcrumb in self.0 %}
+    {% match breadcrumb.kind %}
+      {% when BreadcrumbKind::Repository with { name } %}
+        {% include "breadcrumb/repository.html" %}
+      {% when BreadcrumbKind::Snapshot with { id } %}
+        {% include "breadcrumb/snapshot.html" %}
+      {% when BreadcrumbKind::Directory with { name } %}
+        {% include "breadcrumb/directory.html" %}
+    {% endmatch %}
+  {% endfor %}
+</ul>

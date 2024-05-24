@@ -1,27 +1,29 @@
-use crate::repo::{Entry, RestoreContent};
-use serde::{Deserialize, Serialize};
-use std::fs::File;
+use crate::repo::RestoreContent;
+use progress::update::ProgressReceiver;
+use std::{fs::File, path::PathBuf};
 
+mod destination;
+mod hash;
 mod id;
 mod manager;
 
+pub mod progress;
+
+pub use destination::RestoreDestination;
 pub use id::RestoreId;
-pub use manager::{RestoreManager, RestoreProgress};
+pub use manager::RestoreManager;
 
 pub enum RestoreState {
-    InProgress(RestoreProgress),
-    Available(File),
+    InProgress(ProgressReceiver),
+    Available {
+        file: File,
+        hash: blake3::Hash,
+        content: RestoreContent,
+    },
 }
 
 pub struct Restore {
-    id: RestoreId,
-    state: RestoreState,
-    metadata: RestoreMetadata,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct RestoreMetadata {
-    source: Entry,
-    content: RestoreContent,
-    // expiry:
+    pub id: RestoreId,
+    pub state: RestoreState,
+    pub source: PathBuf,
 }

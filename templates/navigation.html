@@ -1,0 +1,17 @@
+<header class="sticky top-0 z-50 navbar bg-base-100 justify-between items-start shadow-xl border-b border-neutral w-full">
+  <div class="navbar-start w-0 grow shrink min-w-fit">
+    <a class="btn btn-ghost text-xl">ResticDL</a>
+  </div>
+  <div class="w-[56rem] overflow-hidden">
+      <nav class="overflow-x-auto px-4">
+        {{ content|safe }}
+      </nav>
+  </div>
+  <div class="navbar-end w-0 grow shrink min-w-fit">
+    {% if let Some(buttons) = buttons %}
+      {{ buttons|safe }}
+    {% endif %}
+  </div>
+</header>
+
+<div class="w-full h-4"></div>

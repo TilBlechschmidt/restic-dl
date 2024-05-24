@@ -1,0 +1,42 @@
+{% if let Some(StatusData { status, progress }) = status %}
+  <style id="pp" hx-swap-oob="true">
+    {% match status %}
+    {% when Status::Restoring %}
+      #cpc { --value: {{ progress }} }
+      #cpb { width: {{ progress }}% }
+    {% when Status::Completed %}
+      #cp .countdown,
+      #cp .stat-figure { display: none }
+      #cp .pseudo-text { display: block; --c: "100%" }
+
+      #cpb { width: 100% }
+      #cpb, #cpbb { opacity: 0 }
+
+      #cdr, #cfr { color: var(--fallback-bc,oklch(var(--bc)/0.6)) }
+    {% else %}
+      /* TODO Show some errors or something */
+    {% endmatch %}
+  </style>
+{% endif %}
+
+{% if let Some(bytes) = bytes %}
+  <style id="pb" hx-swap-oob="true">
+    #cb { --c: "{{ bytes.total|humanbytes }}" }
+  </style>
+{% endif %}
+
+{% if let Some(DirectoriesData { total, remaining }) = directories %}
+  <style id="pd" hx-swap-oob="true">
+    #cd { display: inline-grid; }
+    #cdt { --c: "{{ total }}"; }
+    #cdr { --c: "{{ remaining }} remaining" }
+  </style>
+{% endif %}
+
+{% if let Some(FilesData { total, remaining }) = files %}
+  <style id="pf" hx-swap-oob="true">
+    #cf { display: inline-grid; }
+    #cft { --c: "{{ total }}"; }
+    #cfr { --c: "{{ remaining }} remaining" }
+  </style>
+{% endif %}

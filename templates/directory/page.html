@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
-{% block nav %}
-  {% let location = directory.location() %}
-  {% include "./partial/location.html" %}
+{% block header %}
+  {{ Navigation::from(directory)|safe }}
 {% endblock %}
 
 {% block content %}
