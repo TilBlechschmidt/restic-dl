@@ -51,7 +51,7 @@
     Your restore is complete and the download has been started!
   </div>
 
-  <div hx-ext="sse" sse-connect="?progress" sse-swap="reload" hx-swap="outerHTML">
+  <div hx-ext="sse" sse-connect="{{ sse_url }}" sse-swap="reload" hx-swap="outerHTML">
     <div sse-swap="data" hx-swap="none"></div>
   </div>
 {% endblock %}

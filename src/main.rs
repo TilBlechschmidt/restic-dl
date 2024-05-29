@@ -1,15 +1,12 @@
+use crate::restic::{repository::Cache, restore::RestoreManager};
 use axum::{Extension, Router};
-use std::error::Error;
-use tower_http::{compression::CompressionLayer, services::ServeDir};
+use error::Result;
+use tower_http::services::ServeDir;
 
-use restore::RestoreManager;
-
-mod browse;
-mod download;
+mod error;
 mod helper;
-mod navigation;
-mod repo;
-mod restore;
+mod http;
+mod restic;
 
 #[derive(Clone)]
 struct Config {
@@ -17,12 +14,12 @@ struct Config {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let config = Config {
         url: "http://localhost:3000".into(),
     };
 
-    let cache = repo::Cache::new();
+    let cache = Cache::new();
     let manager = RestoreManager::new("/tmp/restores", 1)?;
 
     let app = Router::new()
@@ -31,9 +28,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "/favicon.ico",
             tower_http::services::ServeFile::new("assets/favicon.ico"),
         )
-        .nest("/browse", browse::routes())
-        .layer(CompressionLayer::new())
-        .merge(download::routes())
+        .merge(http::router())
         .layer(Extension(cache))
         .layer(Extension(manager))
         .layer(Extension(config));
@@ -45,3 +40,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+// TODO High-level objectives
+// - Authentication
+// - Repo/Snapshot listing
+// - Error reporting
+// - Logging

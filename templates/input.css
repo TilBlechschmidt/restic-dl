@@ -18,16 +18,16 @@ svg {
     @apply w-4 h-4 fill-current;
 }
 
+.breadcrumbs svg {
+    @apply mr-1.5;
+}
+
 figure.qr-code {
     @apply bg-white;
 }
 
 figure.qr-code > svg {
     @apply size-48
-}
-
-.breadcrumbs svg {
-    @apply mr-1.5;
 }
 
 span.pseudo-text::after {
@@ -50,71 +50,4 @@ span.pseudo-text::after {
 /* Safari support for `scrollbar-gutter` is not enabled by default so we just keep the scrollbar there for now */
 :root:has(:is(.modal-open, .modal:target, .modal-toggle:checked + .modal, .modal[open])) {
     overflow: auto;
-}
-
-.file-list span {
-    @apply max-w-32 overflow-hidden truncate;
-}
-
-.file-list a.marker:not(.htmx-request):after {
-    justify-self: end;
-    display: block;
-    margin-top: -0.5rem;
-    height: 0.5rem;
-    width: 0.5rem;
-    transform: rotate(45deg);
-    transition-property: transform, margin-top;
-    transition-duration: 0.3s;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    content: "";
-    transform-origin: 75% 75%;
-    box-shadow: 2px 2px;
-    pointer-events: none;
-}
-
-.file-list a.marker:not(.htmx-request) > .loading {
-    @apply opacity-0;
-}
-
-.file-list a.marker > .loading {
-    opacity: 100%;
-    margin-right: -0.35rem;
-}
-
-pre {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    overflow: auto;
-    font-family: inherit;
-    font-size: 1rem;
-    line-height: inherit;
-    counter-reset: line;
-}
-
-code {
-    counter-increment: line;
-}
-
-code::before {
-    content: counter(line);
-    display: inline-block;
-    width: 2.5em; /* Fixed width */
-    text-align: right;
-    padding: 0 1em 0 0;
-    margin-right: .5em;
-    color: #888;
-    -webkit-user-select: none;
-}
-
-/* TODO Figure out how to prevent tailwind & daisyui from screwing up my codeblocks */
-
-code {
-    display: block;
-}
-
-code span, code p {
-    display: inline !important;
-    font-size: inherit !important;
-    line-height: inherit !important;
 }
