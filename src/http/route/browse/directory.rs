@@ -1,6 +1,6 @@
 use crate::{
     helper::path_to_url,
-    http::partial::{Breadcrumbs, Navigation},
+    http::navigation::{Breadcrumbs, Navigation},
     restic::repository::{Entry, EntryKind, Snapshot},
     Result,
 };

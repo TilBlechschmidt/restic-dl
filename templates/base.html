@@ -9,9 +9,8 @@
 
   <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
 
-  <script src="/assets/js/htmx.js"></script>
-  <script src="/assets/js/htmx-sse.js"></script>
-  <script src="/assets/js/clipboard.js"></script>
+  <script defer src="/assets/js/htmx.js"></script>
+  <script defer src="/assets/js/htmx-sse.js"></script>
 
   {% block head %}{% endblock %}
 </head>
@@ -24,10 +23,6 @@
   </main>
 
   <div id="modal"></div>
-
-  <script>
-    new ClipboardJS('.clipboard');
-  </script>
 </body>
 
 </html>

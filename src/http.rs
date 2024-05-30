@@ -1,5 +1,5 @@
 mod extract;
-mod partial;
+mod navigation;
 mod route;
 
 pub use route::router;

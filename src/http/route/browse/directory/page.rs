@@ -1,5 +1,5 @@
 use super::Directory;
-use crate::{helper::filters, http::partial::Navigation, restic::repository::EntryKind};
+use crate::{helper::filters, http::navigation::Navigation, restic::repository::EntryKind};
 use askama::Template;
 
 #[derive(Template)]

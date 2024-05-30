@@ -15,7 +15,7 @@
         </th>
         <td class="w-full">
           {% let url = parent.url.view.as_ref().expect("parent has no view URL") %}
-          <a href="{{ url }}" class="link link-hover w-full block" hx-get="{{ url }}" hx-target="main" hx-swap="show:window:top" hx-push-url="true">
+          <a href="{{ url }}" class="link link-hover w-full block">
             ..
           </a>
         </td>
@@ -36,10 +36,6 @@
             <a
               href="{{ url }}"
               class="link link-hover block"
-              hx-get="{{ url }}"
-              hx-target="main"
-              hx-swap="show:window:top"
-              hx-push-url="true"
             >
               {{ entry.name() }}
             </a>
