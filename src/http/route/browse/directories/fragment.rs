@@ -3,7 +3,7 @@ use crate::{helper::filters, restic::repository::EntryKind};
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "directory/fragment.html")]
+#[template(path = "browse/directory/fragment.html")]
 pub struct Fragment {
     directory: Directory,
 }

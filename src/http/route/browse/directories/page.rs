@@ -3,7 +3,7 @@ use crate::{helper::filters, http::navigation::Navigation, restic::repository::E
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "directory/page.html")]
+#[template(path = "browse/directory/page.html")]
 pub struct Page {
     directory: Directory,
 }

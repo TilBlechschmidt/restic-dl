@@ -1,11 +1,17 @@
 use crate::{
     helper::path_to_url,
-    http::navigation::{Breadcrumbs, Navigation},
+    http::{
+        extract::{EntryPath, HxRequest},
+        navigation::{Breadcrumbs, Navigation},
+    },
     restic::repository::{Entry, EntryKind, Snapshot},
     Result,
 };
 use askama::Template;
-use axum::response::{IntoResponse, Response};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Redirect, Response},
+};
 use std::{ops::Deref, path::PathBuf};
 
 mod fragment;
@@ -14,11 +20,26 @@ mod page;
 use fragment::Fragment;
 use page::Page;
 
-#[derive(Template)]
-#[template(path = "directory/partial/buttons.html")]
-struct DirectoryButtons {
-    url: DirectoryEntryUrls,
+pub async fn route(snapshot: Snapshot, path: EntryPath, fragment: HxRequest) -> Result<Response> {
+    let entry = snapshot.entry(&*path)?;
+    let directory = Directory::new(snapshot, &*path)?;
+
+    let response = match (entry.kind, &directory.parent) {
+        (EntryKind::File, Some(parent)) => Redirect::to(&parent.url).into_response(),
+        (EntryKind::Directory, _) => directory.into_response(*fragment),
+        (EntryKind::File, None) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Attempted to access file URL without parent",
+        )
+            .into_response(),
+    };
+
+    Ok(response)
 }
+
+#[derive(Template)]
+#[template(path = "browse/directory/partial/buttons.html")]
+struct DirectoryButtons;
 
 pub struct Directory {
     children: Vec<DirectoryEntry>,
@@ -30,19 +51,11 @@ pub struct Directory {
 
 struct DirectoryEntry {
     entry: Entry,
-    url: DirectoryEntryUrls,
-}
-
-struct DirectoryEntryUrls {
-    view: Option<String>,
-    restore: String,
-    share: String,
+    url: String,
 }
 
 impl Directory {
     pub fn new(snapshot: Snapshot, path: &PathBuf) -> Result<Self> {
-        let entry = DirectoryEntry::new(snapshot.entry(&path)?, &snapshot);
-
         let parent = path
             .parent()
             .and_then(|parent_path| snapshot.entry(parent_path).ok())
@@ -57,13 +70,12 @@ impl Directory {
         children.sort_by(|l, r| r.entry.kind.cmp(&l.entry.kind));
 
         let breadcrumbs = Breadcrumbs::from((&snapshot, &path));
-        let buttons = DirectoryButtons { url: entry.url };
 
         Ok(Self {
             children,
             parent,
             breadcrumbs,
-            buttons,
+            buttons: DirectoryButtons,
         })
     }
 
@@ -110,24 +122,12 @@ impl From<&Directory> for Navigation {
 
 impl DirectoryEntry {
     fn new(entry: Entry, snapshot: &Snapshot) -> Self {
-        let suffix = format!(
-            "{}/{}/{}",
+        let url = format!(
+            "/{}/{}/{}",
             snapshot.repo().name(),
             &snapshot.id().as_str()[0..8],
             path_to_url(&entry.path)
         );
-
-        let view = if entry.kind == EntryKind::Directory {
-            Some(format!("/{suffix}"))
-        } else {
-            None
-        };
-
-        let url = DirectoryEntryUrls {
-            share: format!("/restore/{suffix}?share"),
-            restore: format!("/restore/{suffix}"),
-            view,
-        };
 
         Self { url, entry }
     }

@@ -1,24 +1,20 @@
-use self::directory::Directory;
-use crate::{
-    http::extract::{EntryPath, HxRequest},
-    restic::repository::Snapshot,
-    Result,
-};
-use axum::{response::Response, routing::get, Router};
+use crate::http::middleware;
+use axum::{middleware::from_fn, routing::get, Router};
 use tower_http::compression::CompressionLayer;
 
-mod directory;
+mod directories;
+mod repositories;
+mod snapshots;
 
 pub fn routes() -> Router<()> {
     Router::new()
-        // .route("/:repo", get(snapshots::list))
-        // .route("/:repo/", get(snapshots::list))
-        .route("/:repo/:snapshot", get(browse))
-        .route("/:repo/:snapshot/", get(browse))
-        .route("/:repo/:snapshot/*path", get(browse))
+        .route("/:repo/:snapshot/*path", get(directories::route))
+        .route("/:repo/:snapshot/", get(directories::route))
+        .route("/:repo/:snapshot", get(directories::route))
+        .layer(from_fn(middleware::restore::create))
+        .route("/:repo", get(snapshots::route))
+        .layer(from_fn(middleware::repository::unlock))
+        .route("/", get(repositories::route))
+        .layer(from_fn(middleware::session::require))
         .layer(CompressionLayer::new())
-}
-
-pub async fn browse(snapshot: Snapshot, path: EntryPath, fragment: HxRequest) -> Result<Response> {
-    Ok(Directory::new(snapshot, &*path)?.into_response(*fragment))
 }

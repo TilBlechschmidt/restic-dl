@@ -6,11 +6,10 @@ use rustic_core::{
 };
 use std::{ops::Deref, path::PathBuf, sync::Arc};
 
-mod cache;
+pub mod cache;
 mod entry;
 mod snapshot;
 
-pub use cache::Cache;
 pub use entry::{Entry, EntryKind};
 pub use snapshot::Snapshot;
 

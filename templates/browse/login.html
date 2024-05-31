@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block bodyClasses %}bg-neutral full-height{% endblock %}
+
+{% block content %}
+  <div class="card bg-base-100 shadow-2xl">
+    <form class="card-body" method="POST" action="?login">
+      <h2 class="card-title flex flex-col">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" class="size-8" viewBox="0 0 256 256"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM48,128H208v16H48Zm0,32H208v16H48ZM96,56a32,32,0,0,1,64,0V80H96ZM208,96v16H48V96Zm0,112H48V192H208v16Z"></path></svg>
+        Authentication required
+      </h2>
+
+      <label class="input input-bordered flex items-center gap-2 my-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" class="w-4 h-4 opacity-70" viewBox="0 0 256 256"><path d="M48,56V200a8,8,0,0,1-16,0V56a8,8,0,0,1,16,0Zm92,54.5L120,117V96a8,8,0,0,0-16,0v21L84,110.5a8,8,0,0,0-5,15.22l20,6.49-12.34,17a8,8,0,1,0,12.94,9.4l12.34-17,12.34,17a8,8,0,1,0,12.94-9.4l-12.34-17,20-6.49A8,8,0,0,0,140,110.5ZM246,115.64A8,8,0,0,0,236,110.5L216,117V96a8,8,0,0,0-16,0v21l-20-6.49a8,8,0,0,0-4.95,15.22l20,6.49-12.34,17a8,8,0,1,0,12.94,9.4l12.34-17,12.34,17a8,8,0,1,0,12.94-9.4l-12.34-17,20-6.49A8,8,0,0,0,246,115.64Z"></path></svg>
+        <input type="password" name="password" required class="grow" placeholder="Password" autofocus />
+      </label>
+
+      <div class="card-actions justify-end">
+        <input type="submit" value="Login" class="btn btn-primary btn-sm w-full" />
+      </div>
+    </form>
+  </div>
+{% endblock %}

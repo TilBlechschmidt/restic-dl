@@ -4,7 +4,6 @@ mod writer;
 
 pub(super) use writer::ProgressWriter;
 
-pub use count::ProgressCount;
 pub use update::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

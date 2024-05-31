@@ -40,7 +40,10 @@ macro_rules! boolean_query_param {
     };
 }
 
-boolean_query_param!(Share, "share");
+boolean_query_param!(Login, "login");
+boolean_query_param!(Unlock, "unlock");
+boolean_query_param!(CreateRestore, "restore");
+boolean_query_param!(ShareRestore, "share");
 boolean_query_param!(Progress, "progress");
 
 #[cfg(test)]
@@ -72,7 +75,7 @@ mod does {
 
     #[tokio::test]
     async fn parse_boolean_as_expected() {
-        query!(Share, [
+        query!(Login, [
             "link=true" => Ok(true),
             "link" => Ok(true),
 
