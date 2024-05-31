@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block header %}
+  {{ Navigation::from(repository)|safe }}
+{% endblock %}
+
+{% block content %}
+  <table class="table table-zebra whitespace-nowrap w-full table-sm table-top">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Age</th>
+        <th class="hidden md:table-cell">Host</th>
+        <th class="hidden sm:table-cell">Paths</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for snapshot in snapshots %}
+      <tr>
+        {% let id = snapshot.id().to_string()[0..8] %}
+        {% let info = snapshot.info() %}
+        <th>
+          <a href="/{{ repository.name() }}/{{ id }}" class="link link-hover block">{{ id }}</a>
+        </th>
+        <td>
+          <div class="font-mono">{{ info.time|rfctime }}</div>
+          <div class="text-xs opacity-50">{{ info.time|humantime }} ago</div>
+        </td>
+        <td class="hidden md:table-cell">{{ info.hostname }}</td>
+        <td class="hidden sm:table-cell">
+          {% for path in info.paths %}
+            <div>{{ path }}</div>
+          {% endfor %}
+        </td>
+        <td class="!align-middle">
+          <a href="/{{ repository.name() }}/{{ id }}" class="btn btn-square btn-ghost btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

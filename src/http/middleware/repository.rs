@@ -55,13 +55,8 @@ fn extract_repository(
     jar: &CookieJar,
     cache: &RepositoryCache,
 ) -> Result<Repository, ()> {
-    let cookie = jar.get_repository_cookie(name).ok_or_else(|| {
-        eprintln!("Received request with missing session cookie");
-    })?;
-
-    let id: SessionId = cookie.try_into().map_err(|_| {
-        eprintln!("Invalid repository session cookie");
-    })?;
+    let cookie = jar.get_repository_cookie(name).ok_or_else(|| ())?;
+    let id: SessionId = cookie.try_into().map_err(|_| ())?;
 
     cache.get(id).ok_or(())
 }

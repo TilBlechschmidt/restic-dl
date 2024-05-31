@@ -42,6 +42,10 @@ span.pseudo-text::after {
     transition: all 1s cubic-bezier(0.36, 0.36, 0, 0.96);
 }
 
+.table.table-top :where(th, td) {
+    vertical-align: top;
+}
+
 .modal-backdrop {
     background-color: #000a;
     animation: modal-pop .2s ease-out;

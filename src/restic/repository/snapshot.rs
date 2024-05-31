@@ -29,6 +29,10 @@ impl Snapshot {
         self.snapshot_file.id.to_hex()
     }
 
+    pub fn info(&self) -> &SnapshotFile {
+        &self.snapshot_file
+    }
+
     pub fn root_paths(&self) -> Vec<PathBuf> {
         self.snapshot_file.paths.iter().map(PathBuf::from).collect()
     }

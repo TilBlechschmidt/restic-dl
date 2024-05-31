@@ -1,4 +1,5 @@
 use crate::{restic::repository::Repository, Result};
+use argon2::{password_hash::PasswordHashString, Argon2, PasswordVerifier as _};
 use hex::FromHex;
 use rand::{thread_rng, Rng};
 use std::{
@@ -11,7 +12,12 @@ use std::{
 };
 use tokio::{task::AbortHandle, time::sleep};
 
-type RepositoryName = String;
+#[derive(Clone)]
+pub struct RepositoryLocation {
+    pub name: String,
+    pub path: PathBuf,
+    pub password_hash: PasswordHashString,
+}
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub struct SessionId([u8; 32]);
@@ -20,7 +26,7 @@ pub struct SessionId([u8; 32]);
 pub struct RepositoryCache {
     lifetime: Duration,
 
-    locations: HashMap<RepositoryName, PathBuf>,
+    locations: HashMap<String, RepositoryLocation>,
     entries: Arc<Mutex<HashMap<SessionId, CachedRepository>>>,
 }
 
@@ -31,12 +37,12 @@ struct CachedRepository {
 
 impl RepositoryCache {
     pub fn new(
-        locations: impl IntoIterator<Item = (RepositoryName, PathBuf)>,
+        locations: impl IntoIterator<Item = RepositoryLocation>,
         lifetime: Duration,
     ) -> Self {
         Self {
             lifetime,
-            locations: locations.into_iter().collect(),
+            locations: locations.into_iter().map(|l| (l.name.clone(), l)).collect(),
             entries: Arc::new(Mutex::new(HashMap::new())),
         }
     }
@@ -44,13 +50,17 @@ impl RepositoryCache {
     pub fn open(&self, name: impl AsRef<str>, password: String) -> Result<(Repository, SessionId)> {
         let name = name.as_ref().to_string();
 
-        let path = self.locations.get(&name).cloned().ok_or(io::Error::new(
+        let location = self.locations.get(&name).cloned().ok_or(io::Error::new(
             io::ErrorKind::NotFound,
             "repository not found",
         ))?;
 
+        Argon2::default()
+            .verify_password(password.as_bytes(), &location.password_hash.password_hash())
+            .map_err(|_| io::Error::new(io::ErrorKind::PermissionDenied, "invalid password"))?;
+
         let id = SessionId::new();
-        let repo = Repository::open(name, path, password)?;
+        let repo = Repository::open(location.name, location.path, password)?;
 
         self.insert(id, repo.clone());
 

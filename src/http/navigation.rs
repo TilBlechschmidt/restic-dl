@@ -100,3 +100,9 @@ impl From<&Repository> for Breadcrumb {
         }
     }
 }
+
+impl From<&Repository> for Navigation {
+    fn from(repository: &Repository) -> Self {
+        Navigation::new(&Breadcrumbs(vec![repository.into()]))
+    }
+}

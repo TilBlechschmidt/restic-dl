@@ -32,8 +32,7 @@ impl RestoreManager {
                 Ok(metadata) => {
                     let delta = Utc::now().signed_duration_since(metadata.created_at);
 
-                    // TODO Change this back to days :D
-                    if delta.num_seconds() > self.restore_lifetime_days as i64 {
+                    if delta.num_days() > self.restore_lifetime_days as i64 {
                         eprintln!("Purging expired restore `{}`", metadata.id);
                         fs::remove_file(self.data_path(metadata.id)).ok();
                         fs::remove_file(self.meta_path(metadata.id)).ok();

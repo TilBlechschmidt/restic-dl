@@ -1,6 +1,6 @@
+use crate::args::SiteUrl;
 use crate::http::extract::HxRequest;
 use crate::restic::restore::RestoreId;
-use crate::Config;
 use askama::Template;
 use askama_axum::{IntoResponse, Response};
 use axum::extract::Path;
@@ -11,9 +11,9 @@ use fast_qr::qr::QRBuilder;
 pub async fn route(
     fragment: HxRequest,
     Path(id): Path<RestoreId>,
-    Extension(config): Extension<Config>,
+    Extension(SiteUrl(site_url)): Extension<SiteUrl>,
 ) -> Response {
-    let url = format!("{}/restore/{id}", config.url);
+    let url = format!("{site_url}/restore/{id}");
 
     if *fragment {
         ShareFragment::new(url).into_response()

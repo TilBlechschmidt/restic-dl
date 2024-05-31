@@ -12,7 +12,6 @@ const REPO_COOKIE_PREFIX: &'static str = "repo-";
 pub struct CookieParameters {
     pub lifetime: Duration,
     pub secure: bool,
-    pub domain: String,
 }
 
 pub struct RepositoryCookie<'c>(Cookie<'c>);
@@ -33,7 +32,6 @@ impl CookieParameters {
             .same_site(SameSite::Strict)
             .http_only(true)
             .secure(self.secure)
-            .domain(self.domain.clone())
             .path(path)
             .into()
     }

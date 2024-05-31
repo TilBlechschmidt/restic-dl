@@ -8,15 +8,18 @@ argon2 = "0.5.3"
 askama = { version = "0.12.1", default-features = false, features = ["with-axum"] }
 askama_axum = "0.4.0"
 axum = { version = "0.7.5", features = ["http2", "macros"] }
+axum-embed = "0.1.0"
 axum-extra = { version = "0.9.3", features = ["cookie"] }
 blake3 = { version = "1.5.1", features = ["serde"] }
 chrono = { version = "0.4.38", default-features = false, features = ["std", "now", "serde"] }
+clap = { version = "4.5.6", features = ["env", "derive"] }
 fast_qr = { version = "0.12.5", features = ["svg"] }
 form_urlencoded = "1.2.1"
 futures = { version = "0.3.30", default-features = false, features = ["std"] }
 futures-time = "3.0.0"
 hex = "0.4.3"
 rand = "0.8.5"
+rust-embed = "8.4.0"
 rustic_backend = { path = "../rustic_core/crates/backend", version = "0.1.1", default-features = false }
 rustic_core = { path = "../rustic_core/crates/core", version = "0.2.0" }
 serde = { version = "1.0.202", features = ["derive"] }

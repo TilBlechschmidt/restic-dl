@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     http::{extract::Login, CookieParameters},
     restic::repository::cache::SessionId,
@@ -19,6 +21,7 @@ mod cache;
 
 pub use cache::SessionCache;
 use serde::Deserialize;
+use tokio::time::sleep;
 
 #[derive(Template)]
 #[template(path = "browse/login.html")]
@@ -38,7 +41,7 @@ pub async fn require(
     next: Next,
 ) -> Response {
     if *is_login_request && method == Method::POST {
-        return handler.call(request, ()).await;
+        return login.call(request, ()).await;
     }
 
     let session_valid = jar
@@ -54,7 +57,7 @@ pub async fn require(
     }
 }
 
-async fn handler(
+async fn login(
     uri: OriginalUri,
     jar: CookieJar,
     Extension(params): Extension<CookieParameters>,
@@ -72,7 +75,12 @@ async fn handler(
             (jar.add(cookie), Redirect::to(&uri.path())).into_response()
         }
         // TODO Show error
-        None => (StatusCode::UNAUTHORIZED, LoginPage).into_response(),
+        None => {
+            // Poor mans brute-force prevention ^^
+            sleep(Duration::from_secs(1)).await;
+
+            (StatusCode::UNAUTHORIZED, LoginPage).into_response()
+        }
     }
 }
 

@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use chrono::{DateTime, Local};
+
 pub fn path_to_url(path: &Path) -> String {
     path.components()
         .skip_while(|x| x.as_os_str() == "/")
@@ -9,8 +11,18 @@ pub fn path_to_url(path: &Path) -> String {
 }
 
 pub mod filters {
+    use chrono::{DateTime, Local};
+
     pub fn humanbytes(bytes: &u64) -> ::askama::Result<String> {
         Ok(super::format_size(*bytes))
+    }
+
+    pub fn humantime(date: &DateTime<Local>) -> ::askama::Result<String> {
+        Ok(super::format_time(*date))
+    }
+
+    pub fn rfctime(date: &DateTime<Local>) -> ::askama::Result<String> {
+        Ok(date.format("%Y-%m-%d %H:%M").to_string())
     }
 }
 
@@ -45,6 +57,30 @@ pub fn format_size(bytes: u64) -> String {
         format!("{} TB", div_round(bytes, GB * 10) as f64 / 100.0)
     } else {
         format!("{terrabytes} TB")
+    }
+}
+
+pub fn format_time(date: DateTime<Local>) -> String {
+    let distance = Local::now().signed_duration_since(date);
+
+    let minutes = distance.num_minutes();
+    let hours = distance.num_hours();
+    let days = distance.num_days();
+    let weeks = distance.num_weeks();
+
+    // TODO Handle singular vs. plural
+    if minutes < 1 {
+        format!("Less than a minute")
+    } else if minutes < 60 {
+        format!("{minutes} minutes")
+    } else if hours < 48 {
+        format!("{hours} hours")
+    } else if weeks < 1 {
+        format!("{days} days")
+    } else if weeks < 4 {
+        format!("{weeks} weeks")
+    } else {
+        format!("{} months", weeks / 4)
     }
 }
 
