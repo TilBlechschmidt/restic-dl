@@ -5,10 +5,13 @@ use crate::{
     restic::restore::{Restore, RestoreContent, RestoreId, RestoreManager, RestoreState},
     Result,
 };
-use axum::extract::Path;
-use axum::response::{IntoResponse, Response};
 use axum::Extension;
 use axum::{body::Body, http::header};
+use axum::{extract::Path, http::HeaderMap};
+use axum::{
+    http::HeaderValue,
+    response::{IntoResponse, Response},
+};
 use tokio::{fs::File, io::BufReader, time::sleep};
 use tokio_util::io::ReaderStream;
 
@@ -53,13 +56,25 @@ impl IntoResponse for Restore {
                     RestoreContent::Archive { .. } => format!("{source_name}.zip"),
                 };
 
-                let headers = [
-                    (header::CONTENT_TYPE, "application/octet-stream"),
-                    (
-                        header::CONTENT_DISPOSITION,
-                        &format!(r#"attachment; filename="{name}""#),
-                    ),
-                ];
+                let mut headers = HeaderMap::new();
+
+                headers.insert(
+                    header::CONTENT_TYPE,
+                    HeaderValue::from_static("application/octet-stream"),
+                );
+
+                if let Ok(filename) =
+                    HeaderValue::from_str(&format!(r#"attachment; filename="{name}""#))
+                {
+                    headers.insert(header::CONTENT_DISPOSITION, filename);
+                }
+
+                if let Ok(Ok(length)) = file
+                    .metadata()
+                    .map(|m| HeaderValue::from_str(&m.len().to_string()))
+                {
+                    headers.insert(header::CONTENT_LENGTH, length);
+                }
 
                 // TODO Does this support range queries? Probably not as it can't access the header.
                 let body =
