@@ -1,9 +1,6 @@
 use crate::Result;
 use rustic_backend::BackendOptions;
-use rustic_core::{
-    repository::{FullIndex, IndexedStatus},
-    HexId, NoProgressBars, OpenStatus, RepositoryOptions,
-};
+use rustic_core::{FullIndex, HexId, IndexedStatus, NoProgressBars, OpenStatus, RepositoryOptions};
 use std::{ops::Deref, path::PathBuf, sync::Arc};
 
 pub mod cache;

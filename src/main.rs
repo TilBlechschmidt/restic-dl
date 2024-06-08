@@ -9,6 +9,7 @@ mod restic;
 
 #[tokio::main]
 async fn main() {
+    println!("Hi");
     args::Command::parse().execute().await;
 }
 

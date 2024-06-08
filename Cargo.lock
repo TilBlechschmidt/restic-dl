@@ -2226,6 +2226,7 @@ dependencies = [
 [[package]]
 name = "rustic_backend"
 version = "0.1.1"
+source = "git+https://github.com/TilBlechschmidt/rustic_core?branch=public-repo-type#e226bebe7784666024daa7cf84f3003fc849c43c"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -2250,6 +2251,7 @@ dependencies = [
 [[package]]
 name = "rustic_core"
 version = "0.2.0"
+source = "git+https://github.com/TilBlechschmidt/rustic_core?branch=public-repo-type#e226bebe7784666024daa7cf84f3003fc849c43c"
 dependencies = [
  "aes256ctr_poly1305aes",
  "anyhow",
