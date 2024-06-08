@@ -30,10 +30,15 @@ pub struct RestoreManager {
     progress: Arc<Mutex<HashMap<RestoreId, ProgressReceiver>>>,
     purge_lock: Arc<RwLock<()>>,
     restore_lifetime_days: u32,
+    keep_full_paths: bool,
 }
 
 impl RestoreManager {
-    pub fn new(root: impl AsRef<Path>, restore_lifetime_days: u32) -> io::Result<Self> {
+    pub fn new(
+        root: impl AsRef<Path>,
+        restore_lifetime_days: u32,
+        keep_full_paths: bool,
+    ) -> io::Result<Self> {
         assert!(
             restore_lifetime_days > 0,
             "restore lifetime must be larger than `0`"
@@ -49,6 +54,7 @@ impl RestoreManager {
             progress: Arc::new(Mutex::new(HashMap::new())),
             purge_lock: Arc::new(RwLock::new(())),
             restore_lifetime_days,
+            keep_full_paths,
         };
 
         manager.purge()?;

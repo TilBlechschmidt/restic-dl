@@ -28,6 +28,7 @@ impl Repository {
 
         let repo_opts = RepositoryOptions::default()
             .password(password.as_ref())
+            // TODO Add the option for a cache
             .no_cache(true);
 
         let repo = Arc::new(

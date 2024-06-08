@@ -6,21 +6,36 @@ use crate::restic::restore::progress::{
 };
 use std::{
     io::{self, Seek, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipWriter};
 
 pub struct ArchiveDestination<'p, W: Write + Seek> {
     archive: ZipWriter<W>,
     progress: &'p mut ProgressTracker,
+    path_base: PathBuf,
 }
 
 impl<'p, W: Write + Seek> ArchiveDestination<'p, W> {
-    pub fn new(writer: W, progress: &'p mut ProgressTracker) -> io::Result<Self> {
+    pub fn new(
+        writer: W,
+        progress: &'p mut ProgressTracker,
+        path_base: PathBuf,
+    ) -> io::Result<Self> {
         let mut archive = ZipWriter::new(writer);
         archive.set_comment("ResticDL Restore");
 
-        Ok(Self { archive, progress })
+        Ok(Self {
+            archive,
+            progress,
+            path_base,
+        })
+    }
+
+    fn path_suffix(&self, path: &Path) -> PathBuf {
+        path.strip_prefix(&self.path_base)
+            .unwrap_or(&path)
+            .to_path_buf()
     }
 }
 
@@ -33,7 +48,8 @@ impl<'p, W: Write + Seek> RestoreDestination for ArchiveDestination<'p, W> {
         // .unix_permissions(mode)
         // .last_modified_time(mod_time)
 
-        self.archive.start_file_from_path(path, options)?;
+        self.archive
+            .start_file_from_path(self.path_suffix(&path), options)?;
 
         Ok(ProgressWriter::new(&mut self.archive, &mut self.progress))
     }
@@ -43,6 +59,6 @@ impl<'p, W: Write + Seek> RestoreDestination for ArchiveDestination<'p, W> {
 
         Ok(self
             .archive
-            .add_directory_from_path(path, SimpleFileOptions::default())?)
+            .add_directory_from_path(self.path_suffix(&path), SimpleFileOptions::default())?)
     }
 }

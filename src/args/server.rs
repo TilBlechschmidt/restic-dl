@@ -41,6 +41,10 @@ pub struct Args {
     #[arg(env, verbatim_doc_comment)]
     restore_location: PathBuf,
 
+    /// Whether to keep the full directory hierarchy in restore archives or start at the restored folder
+    #[arg(env, long, default_value_t = false)]
+    keep_full_paths: bool,
+
     /// List of repositories to host. Each repository requires three parts:
     ///
     /// 1. Name
@@ -126,8 +130,12 @@ impl Args {
         let cookie_params = self.cookie_parameters();
         let cache_repo = RepositoryCache::new(self.locations(), session_lifetime);
         let cache_session = SessionCache::new(self.password, session_lifetime);
-        let manager = RestoreManager::new(self.restore_location, self.restore_lifetime_days)
-            .expect("Failed to prepare restore location");
+        let manager = RestoreManager::new(
+            self.restore_location,
+            self.restore_lifetime_days,
+            self.keep_full_paths,
+        )
+        .expect("Failed to prepare restore location");
 
         router
             .layer(Extension(site_url))

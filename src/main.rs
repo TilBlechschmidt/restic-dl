@@ -13,6 +13,8 @@ async fn main() {
 }
 
 // TODO High-level objectives
+// - Put repo name on unlock screen
+// - Make `/` behind repo name work
 // - Error reporting
 // - Logging
 // - Repo listing

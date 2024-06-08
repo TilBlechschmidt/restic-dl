@@ -65,7 +65,13 @@ impl RestoreManager {
                 plan.execute(FileDestination::new(&mut writer, progress)?)?
             }
             RestoreContent::Archive { .. } => {
-                plan.execute(ArchiveDestination::new(&mut writer, progress)?)?
+                let path_base = if self.keep_full_paths {
+                    PathBuf::new()
+                } else {
+                    plan.source.path.clone()
+                };
+
+                plan.execute(ArchiveDestination::new(&mut writer, progress, path_base)?)?
             }
         };
 
