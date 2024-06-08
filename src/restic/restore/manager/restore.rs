@@ -109,10 +109,12 @@ impl RestoreManager {
         let mut progress = ProgressTracker::new();
         let manager = self.clone();
 
+        let progress_handle = progress.handle();
+
         self.progress
             .lock()
             .expect("progress map poisoned")
-            .insert(id, progress.handle());
+            .insert(id, progress_handle.clone());
 
         thread::spawn(move || {
             let result = manager.restore_task(id, snapshot, source, &mut progress);
@@ -131,6 +133,9 @@ impl RestoreManager {
                 .expect("progress map poisoned")
                 .remove(&id);
         });
+
+        // Wait for the first progress update so the user does not see a "not found" screen
+        _ = progress_handle.subscribe().recv().await;
 
         id
     }
