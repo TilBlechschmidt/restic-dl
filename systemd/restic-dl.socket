@@ -1,0 +1,5 @@
+[Socket]
+ListenStream = 9242
+
+[Install]
+WantedBy = sockets.target
