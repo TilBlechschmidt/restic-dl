@@ -4,6 +4,7 @@ use crate::{
     restic::{repository::cache::RepositoryCache, restore::RestoreManager},
 };
 use argon2::password_hash::PasswordHashString;
+use axum::http::uri::PathAndQuery;
 use axum::{
     http::{uri::Scheme, Uri},
     Extension, Router,
@@ -119,14 +120,23 @@ impl Args {
         })
     }
 
+    fn site_url(&self) -> String {
+        // Strip any path and query params
+        let mut parts = self.site_url.clone().into_parts();
+        parts.path_and_query = Some(PathAndQuery::from_static(""));
+
+        // Reconstruct and trim trailing slashes
+        let uri = Uri::from_parts(parts).expect("reconstructing the site URI should work");
+        uri.to_string().trim_end_matches('/').to_string()
+    }
+
     pub fn into_layers<S>(self, router: Router<S>) -> Router<S>
     where
         S: Clone + Send + Sync + 'static,
     {
         let session_lifetime = self.session_lifetime();
 
-        // TODO Check that there is no trailing slash, path, and query
-        let site_url = SiteUrl(self.site_url.to_string());
+        let site_url = SiteUrl(self.site_url());
         let cookie_params = self.cookie_parameters();
         let cache_repo = RepositoryCache::new(self.locations(), session_lifetime);
         let cache_session = SessionCache::new(self.password, session_lifetime);
